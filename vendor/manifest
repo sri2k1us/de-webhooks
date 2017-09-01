@@ -1,0 +1,66 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/buger/jsonparser",
+			"repository": "https://github.com/buger/jsonparser",
+			"vcs": "git",
+			"revision": "fda8192cc4f100afbdbbcce82284a5b711969174",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mailru/easyjson/buffer",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
+			"branch": "master",
+			"path": "buffer",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mailru/easyjson/jlexer",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
+			"branch": "master",
+			"path": "jlexer",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/mailru/easyjson/jwriter",
+			"repository": "https://github.com/mailru/easyjson",
+			"vcs": "git",
+			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
+			"branch": "master",
+			"path": "/jwriter",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pquerna/ffjson/fflib/v1",
+			"repository": "https://github.com/pquerna/ffjson",
+			"vcs": "git",
+			"revision": "9a5203b7a07166f217f5f8177d5b16177acad3b2",
+			"branch": "master",
+			"path": "/fflib/v1",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/streadway/amqp",
+			"repository": "https://github.com/streadway/amqp",
+			"vcs": "git",
+			"revision": "2cbfe40c9341ad63ba23e53013b3ddc7989d801c",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/ugorji/go/codec",
+			"repository": "https://github.com/ugorji/go",
+			"vcs": "git",
+			"revision": "8c0409fcbb70099c748d71f714529204975f6c3f",
+			"branch": "master",
+			"path": "/codec",
+			"notests": true
+		}
+	]
+}
