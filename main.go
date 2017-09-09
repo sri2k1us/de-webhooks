@@ -1,36 +1,66 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
 
+	"github.com/cyverse-de/configurate"
+	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 )
 
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
-		panic(fmt.Sprintf("%s: %s", msg, err))
-	}
-}
+//Log define a logrus logger
+var Log = logrus.WithFields(logrus.Fields{
+	"service": "de-webhooks",
+	"art-id":  "de-webhooks",
+	"group":   "org.cyverse",
+})
+
+var cfg *viper.Viper
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Printf("Usage: %s [amqp_url] [binding_key]...", os.Args[0])
+
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	var (
+		cfgPath = flag.String("config", "/etc/iplant/de/webhooks.yml", "The path to the config file")
+		err     error
+	)
+
+	flag.Parse()
+
+	if *cfgPath == "" {
+		Log.Fatal("--config must be set")
+	}
+
+	if cfg, err = configurate.InitDefaults(*cfgPath, configurate.JobServicesDefaults); err != nil {
+		Log.Fatal(err)
+	}
+
+	if len(os.Args) < 2 {
+		Log.Printf("Usage: %s [binding_key]...", os.Args[0])
 		os.Exit(0)
 	}
 
-	conn, err := amqp.Dial(os.Args[1])
-	failOnError(err, "Failed to connect to RabbitMQ")
+	Log.Printf("Connecting to amqp %s", cfg.GetString("amqp.uri"))
+	conn, err := amqp.Dial(cfg.GetString("amqp.uri"))
+	if err != nil {
+		Log.Fatal(err)
+	}
 	defer conn.Close()
 
+	Log.Printf("Connected to amqp.")
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	if err != nil {
+		Log.Fatal(err)
+	}
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"de",    // name
+		cfg.GetString("amqp.exchange.name"), // name
 		"topic", // type
 		true,    // durable
 		false,   // auto-deleted
@@ -38,7 +68,9 @@ func main() {
 		false,   // no-wait
 		nil,     // arguments
 	)
-	failOnError(err, "Failed to declare an exchange")
+	if err != nil {
+		Log.Fatal(err)
+	}
 
 	q, err := ch.QueueDeclare(
 		"",    // name
@@ -48,9 +80,11 @@ func main() {
 		false, // no-wait
 		nil,   // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	if err != nil {
+		Log.Fatal(err)
+	}
 
-	for _, s := range os.Args[2:] {
+	for _, s := range os.Args[1:] {
 		log.Printf("Binding queue %s to exchange %s with routing key %s",
 			q.Name, "Notifications topic", s)
 		err = ch.QueueBind(
@@ -59,7 +93,9 @@ func main() {
 			"de",   // exchange
 			false,
 			nil)
-		failOnError(err, "Failed to bind a queue")
+		if err != nil {
+			Log.Fatal(err)
+		}
 	}
 
 	msgs, err := ch.Consume(
@@ -71,7 +107,9 @@ func main() {
 		false,  // no wait
 		nil,    // args
 	)
-	failOnError(err, "Failed to register a consumer")
+	if err != nil {
+		Log.Fatal(err)
+	}
 
 	forever := make(chan bool)
 
@@ -79,6 +117,6 @@ func main() {
 		ProcessMessages(msgs)
 	}()
 
-	log.Printf(" [*] Waiting for notifications. To exit press CTRL+C")
+	Log.Print("****Waiting for notfications. Press Ctrl + c to quit!****")
 	<-forever
 }

@@ -72,6 +72,30 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/cyverse-de/configurate",
+			"repository": "https://github.com/cyverse-de/configurate",
+			"vcs": "git",
+			"revision": "7cb335597f9b972d380a6787a95b34f4a4705d5d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cyverse-de/dbutil",
+			"repository": "https://github.com/cyverse-de/dbutil",
+			"vcs": "git",
+			"revision": "04e85e2737c9ece12d4dd59bf4cd6197a86ea511",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cyverse-de/queries",
+			"repository": "https://github.com/cyverse-de/queries",
+			"vcs": "git",
+			"revision": "3e2e4691ef9751b5cdee0af68ba1c6ea429d3114",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/fsnotify/fsnotify",
 			"repository": "https://github.com/fsnotify/fsnotify",
 			"vcs": "git",
@@ -92,6 +116,14 @@
 			"repository": "https://github.com/kr/fs",
 			"vcs": "git",
 			"revision": "2788f0dbd16903de03cb8186e5c7d97b69ad387b",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/lib/pq",
+			"repository": "https://github.com/lib/pq",
+			"vcs": "git",
+			"revision": "e42267488fe361b9dc034be7a6bffef5b195bceb",
 			"branch": "master",
 			"notests": true
 		},
@@ -169,6 +201,14 @@
 			"revision": "9a5203b7a07166f217f5f8177d5b16177acad3b2",
 			"branch": "master",
 			"path": "/fflib/v1",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/sirupsen/logrus",
+			"repository": "https://github.com/sirupsen/logrus",
+			"vcs": "git",
+			"revision": "89742aefa4b206dcf400792f3bd35b542998eb3b",
+			"branch": "master",
 			"notests": true
 		},
 		{
