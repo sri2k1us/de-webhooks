@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"os"
@@ -19,7 +20,12 @@ var Log = logrus.WithFields(logrus.Fields{
 	"group":   "org.cyverse",
 })
 
-var cfg *viper.Viper
+//DBConnection db connection to DE database
+type DBConnection struct {
+	db *sql.DB
+}
+
+var config *viper.Viper
 
 func main() {
 
@@ -27,7 +33,6 @@ func main() {
 
 	var (
 		cfgPath = flag.String("config", "/etc/iplant/de/webhooks.yml", "The path to the config file")
-		err     error
 	)
 
 	flag.Parse()
@@ -36,17 +41,19 @@ func main() {
 		Log.Fatal("--config must be set")
 	}
 
-	if cfg, err = configurate.InitDefaults(*cfgPath, configurate.JobServicesDefaults); err != nil {
+	cfg, err := configurate.InitDefaults(*cfgPath, configurate.JobServicesDefaults)
+	if err != nil {
 		Log.Fatal(err)
 	}
+	config = cfg
 
 	if len(os.Args) < 2 {
 		Log.Printf("Usage: %s [binding_key]...", os.Args[0])
 		os.Exit(0)
 	}
 
-	Log.Printf("Connecting to amqp %s", cfg.GetString("amqp.uri"))
-	conn, err := amqp.Dial(cfg.GetString("amqp.uri"))
+	Log.Printf("Connecting to amqp %s", config.GetString("amqp.uri"))
+	conn, err := amqp.Dial(config.GetString("amqp.uri"))
 	if err != nil {
 		Log.Fatal(err)
 	}
@@ -111,12 +118,21 @@ func main() {
 		Log.Fatal(err)
 	}
 
+	DBConnection := NewDBConnection(Init())
+
 	forever := make(chan bool)
-
 	go func() {
-		ProcessMessages(msgs)
+		DBConnection.ProcessMessages(msgs)
 	}()
-
 	Log.Print("****Waiting for notfications. Press Ctrl + c to quit!****")
 	<-forever
+
+	defer DBConnection.db.Close()
+}
+
+//NewDBConnection makes a new DBConnection
+func NewDBConnection(db *sql.DB) *DBConnection {
+	return &DBConnection{
+		db: db,
+	}
 }

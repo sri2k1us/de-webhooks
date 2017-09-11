@@ -1,13 +1,28 @@
 package main
 
 import (
+	"database/sql"
+
 	"github.com/cyverse-de/dbutil"
+	"github.com/cyverse-de/queries"
 	_ "github.com/lib/pq"
 )
 
+//DB is the interface for interacting with the DE database
+type DB interface {
+	getTemplates() (map[string]string, error)
+	getUserInfo(username string) (string, error)
+	getSubscriptions(userid string) ([]Subscription, error)
+}
+
+//Subscription defines user subscriptions to webhooks
+type Subscription struct {
+	templatetype, url string
+}
+
 //Init init database connection
-func Init() {
-	dburi := cfg.GetString("db.uri")
+func Init() *sql.DB {
+	dburi := config.GetString("db.uri")
 	connector, err := dbutil.NewDefaultConnector("1m")
 	if err != nil {
 		Log.Fatal(err)
@@ -19,7 +34,6 @@ func Init() {
 	if err != nil {
 		Log.Fatal(err)
 	}
-	defer db.Close()
 
 	Log.Println("Connected to the database.")
 
@@ -28,4 +42,61 @@ func Init() {
 	}
 
 	Log.Println("Successfully pinged the database.")
+	return db
+}
+
+//getTemplates get template for give webhooks type e.g: slack
+func (s *DBConnection) getTemplates() (map[string]string, error) {
+	var id, temptext string
+	tempmap := make(map[string]string)
+	query := `select id, template from webhooks_type;`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&id, &temptext)
+		if err != nil {
+			return nil, err
+		}
+		tempmap[id] = temptext
+	}
+	if err := rows.Err(); err != nil {
+		return tempmap, err
+	}
+	return tempmap, nil
+}
+
+//getUserInfo get User id for given user name
+func (s *DBConnection) getUserInfo(username string) (string, error) {
+	userID, err := queries.UserID(s.db, username)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
+}
+
+//getUserSubscriptions get user subscriptions to webhooks
+func (s *DBConnection) getUserSubscriptions(uid string) ([]Subscription, error) {
+	subs := []Subscription{}
+	query := `select url, type_id from webhooks where user_id=$1`
+	rows, err := s.db.Query(query, string(uid))
+	if err != nil {
+		return subs, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var sub Subscription
+		err := rows.Scan(&sub.url, &sub.templatetype)
+		if err != nil {
+			return subs, err
+		}
+		subs = append(subs, sub)
+	}
+	if err := rows.Err(); err != nil {
+		return subs, err
+	}
+
+	return subs, nil
 }
