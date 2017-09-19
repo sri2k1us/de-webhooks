@@ -13,3 +13,7 @@ amqp:
 db:
   {{ with $v := (key (printf "%s/de-db/uri" $base)) }}uri: {{ $v }}{{ end }}
 {{- end }}
+de:
+  {{ with $v := (key (printf "%s/de/base" $base)) }}base: {{ $v }}{{ end }}
+user:
+  {{ with $v := (key (printg %s/de/cas-uid-domain)) }}suffix: {{ $v }}{{ end }}  
