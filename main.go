@@ -119,15 +119,14 @@ func main() {
 	}
 
 	DBConnection := NewDBConnection(Init())
+	defer DBConnection.db.Close()
 
 	forever := make(chan bool)
 	go func() {
-		DBConnection.ProcessMessages(msgs)
+		ProcessMessages(DBConnection, msgs)
 	}()
-	Log.Print("****Waiting for notfications. Press Ctrl + c to quit!****")
+	Log.Print("**** Waiting for notfications. Press Ctrl + c to quit! ****")
 	<-forever
-
-	defer DBConnection.db.Close()
 }
 
 //NewDBConnection makes a new DBConnection

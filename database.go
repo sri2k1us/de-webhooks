@@ -13,11 +13,7 @@ type DB interface {
 	getTemplates() (map[string]string, error)
 	getUserInfo(username string) (string, error)
 	getSubscriptions(userid string) ([]Subscription, error)
-}
-
-//Subscription defines user subscriptions to webhooks
-type Subscription struct {
-	templatetype, url string
+	getTopics(webhookid string) ([]string, error)
 }
 
 //Init init database connection
@@ -80,7 +76,7 @@ func (s *DBConnection) getUserInfo(username string) (string, error) {
 //getUserSubscriptions get user subscriptions to webhooks
 func (s *DBConnection) getUserSubscriptions(uid string) ([]Subscription, error) {
 	subs := []Subscription{}
-	query := `select url, type_id from webhooks where user_id=$1`
+	query := `select id, url, type_id from webhooks where user_id=$1`
 	rows, err := s.db.Query(query, string(uid))
 	if err != nil {
 		return subs, err
@@ -88,10 +84,15 @@ func (s *DBConnection) getUserSubscriptions(uid string) ([]Subscription, error) 
 	defer rows.Close()
 	for rows.Next() {
 		var sub Subscription
-		err := rows.Scan(&sub.url, &sub.templatetype)
+		err := rows.Scan(&sub.id, &sub.url, &sub.templatetype)
 		if err != nil {
 			return subs, err
 		}
+		topics, err := s.getTopics(sub.id)
+		if err != nil {
+			return subs, err
+		}
+		sub.topics = topics
 		subs = append(subs, sub)
 	}
 	if err := rows.Err(); err != nil {
@@ -99,4 +100,31 @@ func (s *DBConnection) getUserSubscriptions(uid string) ([]Subscription, error) 
 	}
 
 	return subs, nil
+}
+
+func (s *DBConnection) getTopics(id string) ([]string, error) {
+	topics := []string{}
+
+	topicsquery := `select wt.topic from webhooks_topic as wt
+	join webhooks_subscription as ws on wt.id = ws.topic_id
+	where ws.webhook_id =$1`
+
+	rows, err := s.db.Query(topicsquery, string(id))
+	if err != nil {
+		return topics, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tp string
+		err := rows.Scan(&tp)
+		if err != nil {
+			return topics, err
+		}
+		Log.Printf("Topic found: %s", tp)
+		topics = append(topics, tp)
+	}
+	if err := rows.Err(); err != nil {
+		return topics, err
+	}
+	return topics, nil
 }

@@ -21,6 +21,7 @@ import (
 
 //compltedstatus Analysis completed status
 const compltedstatus = "Completed"
+const failedstatus = "Failed"
 
 //Payload payload to post to the webhooks
 type Payload struct {
@@ -28,11 +29,17 @@ type Payload struct {
 	Completed           bool
 }
 
+//Subscription defines user subscriptions to webhooks
+type Subscription struct {
+	id, templatetype, url string
+	topics                []string
+}
+
 //template cache
 var templatesmap map[string]string
 
 //ProcessMessages process the received message for post to webhooks
-func (d *DBConnection) ProcessMessages(msgs <-chan amqp.Delivery) {
+func ProcessMessages(d *DBConnection, msgs <-chan amqp.Delivery) {
 	if templatesmap == nil { // call only when template cache is not ready
 		temmap, err := d.getTemplates()
 		if err != nil {
@@ -43,16 +50,17 @@ func (d *DBConnection) ProcessMessages(msgs <-chan amqp.Delivery) {
 	}
 	for delivery := range msgs {
 		Log.Printf("[X] Notification %s", delivery.Body)
-		isAnalysis := isAnalysisNotification(delivery.Body)
-		uid := d.getUserID(delivery.Body)
-		if isAnalysis && uid != "" {
-			d.postToHook(uid, delivery.Body)
+		uid := getUserID(d, delivery.Body)
+		if uid != "" {
+			postToHook(d, uid, delivery.Body)
+		} else {
+			Log.Error("User not found!")
 		}
 	}
 }
 
 //getUserID Get user id for this Notification
-func (d *DBConnection) getUserID(msg []byte) string {
+func getUserID(d *DBConnection, msg []byte) string {
 	value, _, _, err := jsonparser.Get(msg, "message", "user")
 	if err != nil {
 		Log.Error(err)
@@ -68,7 +76,7 @@ func (d *DBConnection) getUserID(msg []byte) string {
 }
 
 //post to webhooks
-func (d *DBConnection) postToHook(uid string, msg []byte) {
+func postToHook(d *DBConnection, uid string, msg []byte) {
 	subs, err := d.getUserSubscriptions(uid)
 	if err != nil {
 		Log.Error(err)
@@ -77,27 +85,36 @@ func (d *DBConnection) postToHook(uid string, msg []byte) {
 	Log.Printf("No. of subscriptions found: %d", len(subs))
 	if len(subs) > 0 {
 		for _, v := range subs {
-			resp, err := http.Post(v.url, "application/json", preparePayloadFromTemplate(templatesmap[v.templatetype], msg))
-			if err != nil {
-				Log.Printf("Error posting to hook %s", err)
+			if isNotificationInTopic(msg, v.topics) {
+				resp, err := http.Post(v.url, "application/json", preparePayloadFromTemplate(templatesmap[v.templatetype], msg))
+				if err != nil {
+					Log.Printf("Error posting to hook %s", err)
+				}
+				defer resp.Body.Close()
 			}
-			defer resp.Body.Close()
 		}
 	}
 }
 
-//Check if the Notification is for Analysis
-func isAnalysisNotification(msg []byte) bool {
+//isNotificationInTopic check if user is subscribed to this notification topic
+func isNotificationInTopic(msg []byte, topics []string) bool {
 	value, _, _, err := jsonparser.Get(msg, "message", "type")
 	if err != nil {
 		Log.Error(err)
 		return false
 	}
-	log.Printf("Notification type is %s", string(value))
-	if string(value) == "analysis" {
-		return true
+	if len(topics) < 1 {
+		return false
+	}
+
+	for _, to := range topics {
+		if string(value) == to {
+			Log.Printf("Subscription to topic found: %s", to)
+			return true
+		}
 	}
 	return false
+
 }
 
 //Prepare payload from template
@@ -109,7 +126,7 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 	isCompleted := isAnalysisCompleted(msg)
 	postbody = Payload{getMessage(msg), config.GetString("de.base") + getResultFolder(msg), "Go to results folder in DE", isCompleted}
 	t.Execute(w, postbody)
-	log.Printf("message to post-> %s", buf1.String())
+	log.Printf("message to post: %s", buf1.String())
 	return strings.NewReader(buf1.String())
 }
 
@@ -121,7 +138,7 @@ func isAnalysisCompleted(msg []byte) bool {
 		Log.Error(err)
 	}
 	Log.Printf("Analysis status is %s", value)
-	if string(value) == compltedstatus {
+	if string(value) == compltedstatus || string(value) == failedstatus {
 		return true
 	}
 	return false
