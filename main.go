@@ -24,6 +24,9 @@ type DBConnection struct {
 	db *sql.DB
 }
 
+//Queue name
+const queuename = "notification-queue"
+
 var config *viper.Viper
 
 func main() {
@@ -74,12 +77,12 @@ func main() {
 	}
 
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when usused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		queuename, // name
+		false,     // durable
+		false,     // delete when usused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	if err != nil {
 		Log.Fatal(err)
