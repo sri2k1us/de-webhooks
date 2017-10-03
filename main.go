@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"log"
-	"os"
 
 	"github.com/cyverse-de/configurate"
 	_ "github.com/lib/pq"
@@ -47,11 +46,6 @@ func main() {
 	}
 	config = cfg
 
-	if len(os.Args) < 2 {
-		Log.Printf("Usage: %s [binding_key]...", os.Args[0])
-		os.Exit(0)
-	}
-
 	Log.Printf("Connecting to amqp %s", config.GetString("amqp.uri"))
 	conn, err := amqp.Dial(config.GetString("amqp.uri"))
 	if err != nil {
@@ -91,18 +85,16 @@ func main() {
 		Log.Fatal(err)
 	}
 
-	for _, s := range os.Args[1:] {
-		log.Printf("Binding queue %s to exchange %s with routing key %s",
-			q.Name, "Notifications topic", s)
-		err = ch.QueueBind(
-			q.Name, // queue name
-			s,      // routing key
-			"de",   // exchange
-			false,
-			nil)
-		if err != nil {
-			Log.Fatal(err)
-		}
+	log.Printf("Binding queue %s to exchange %s with routing key %s",
+		q.Name, "Notifications topic", config.GetString("amqp.routing"))
+	err = ch.QueueBind(
+		q.Name, // queue name
+		config.GetString("amqp.routing"), // routing key
+		"de", // exchange
+		false,
+		nil)
+	if err != nil {
+		Log.Fatal(err)
 	}
 
 	msgs, err := ch.Consume(

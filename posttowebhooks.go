@@ -103,13 +103,14 @@ func isNotificationInTopic(msg []byte, topics []string) bool {
 		Log.Error(err)
 		return false
 	}
+
 	if len(topics) < 1 {
 		return false
 	}
 
 	for _, to := range topics {
 		if string(value) == to {
-			Log.Printf("Subscription to topic found: %s", to)
+			Log.Printf("Subscription topic found: %s", to)
 			return true
 		}
 	}
@@ -123,11 +124,21 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 	var postbody Payload
 	t := template.Must(template.New("slack").Parse(templatetext))
 	w := io.MultiWriter(&buf1)
-	isCompleted := isAnalysisCompleted(msg)
+	isCompleted := isAnalysisNotifiction(msg) && isAnalysisCompleted(msg)
 	postbody = Payload{getMessage(msg), config.GetString("de.base") + getResultFolder(msg), "Go to results folder in DE", isCompleted}
 	t.Execute(w, postbody)
 	log.Printf("message to post: %s", buf1.String())
 	return strings.NewReader(buf1.String())
+}
+
+//check if it is an analysis notification
+func isAnalysisNotifiction(msg []byte) bool {
+	value, _, _, err := jsonparser.Get(msg, "message", "type")
+	if err != nil {
+		Log.Error(err)
+		return false
+	}
+	return string(value) == "analysis"
 }
 
 //check if the analysis is completed
