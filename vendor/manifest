@@ -2,14 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/armon/consul-api",
-			"repository": "https://github.com/armon/consul-api",
-			"vcs": "git",
-			"revision": "dcfedd50ed5334f96adee43fc88518a4f095e15c",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/buger/jsonparser",
 			"repository": "https://github.com/buger/jsonparser",
 			"vcs": "git",
@@ -107,7 +99,7 @@
 			"importpath": "github.com/hashicorp/hcl",
 			"repository": "https://github.com/hashicorp/hcl",
 			"vcs": "git",
-			"revision": "8f6b1344a92ff8877cf24a5de9177bf7d0a2a187",
+			"revision": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8",
 			"branch": "master",
 			"notests": true
 		},
@@ -133,33 +125,6 @@
 			"vcs": "git",
 			"revision": "8d7837e64d3c1ee4e54a880c5a920ab4316fc90a",
 			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/mailru/easyjson/buffer",
-			"repository": "https://github.com/mailru/easyjson",
-			"vcs": "git",
-			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
-			"branch": "master",
-			"path": "buffer",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/mailru/easyjson/jlexer",
-			"repository": "https://github.com/mailru/easyjson",
-			"vcs": "git",
-			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
-			"branch": "master",
-			"path": "jlexer",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/mailru/easyjson/jwriter",
-			"repository": "https://github.com/mailru/easyjson",
-			"vcs": "git",
-			"revision": "3b3bbef4e2d9a6f24d7ee73a894afbc064f0e057",
-			"branch": "master",
-			"path": "/jwriter",
 			"notests": true
 		},
 		{
@@ -190,17 +155,8 @@
 			"importpath": "github.com/pkg/sftp",
 			"repository": "https://github.com/pkg/sftp",
 			"vcs": "git",
-			"revision": "98203f5a8333288eb3163b7c667d4260fe1333e9",
+			"revision": "7c1f7a370726a2457b33b29baefc2402b4965c65",
 			"branch": "master",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/pquerna/ffjson/fflib/v1",
-			"repository": "https://github.com/pquerna/ffjson",
-			"vcs": "git",
-			"revision": "9a5203b7a07166f217f5f8177d5b16177acad3b2",
-			"branch": "master",
-			"path": "/fflib/v1",
 			"notests": true
 		},
 		{
@@ -215,7 +171,7 @@
 			"importpath": "github.com/spf13/afero",
 			"repository": "https://github.com/spf13/afero",
 			"vcs": "git",
-			"revision": "ee1bd8ee15a1306d1f9201acc41ef39cd9f99a1b",
+			"revision": "e67d870304c4bca21331b02f414f970df13aa694",
 			"branch": "master",
 			"notests": true
 		},
