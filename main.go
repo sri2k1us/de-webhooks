@@ -49,7 +49,7 @@ func main() {
 	}
 	config = cfg
 
-	Log.Printf("Connecting to amqp %s", config.GetString("amqp.uri"))
+	Log.Print("Connecting to amqp...")
 	conn, err := amqp.Dial(config.GetString("amqp.uri"))
 	if err != nil {
 		Log.Fatal(err)
@@ -89,11 +89,11 @@ func main() {
 	}
 
 	log.Printf("Binding queue %s to exchange %s with routing key %s",
-		q.Name, "Notifications topic", config.GetString("amqp.routing"))
+		q.Name, cfg.GetString("amqp.exchange.name"), config.GetString("amqp.routing"))
 	err = ch.QueueBind(
 		q.Name, // queue name
-		config.GetString("amqp.routing"), // routing key
-		"de", // exchange
+		config.GetString("amqp.routing"),    // routing key
+		cfg.GetString("amqp.exchange.name"), // exchange
 		false,
 		nil)
 	if err != nil {
@@ -120,7 +120,7 @@ func main() {
 	go func() {
 		ProcessMessages(DBConnection, msgs)
 	}()
-	Log.Print("**** Waiting for notfications. Press Ctrl + c to quit! ****")
+	Log.Print("**** Waiting for notifications. Press Ctrl + c to quit! ****")
 	<-forever
 }
 

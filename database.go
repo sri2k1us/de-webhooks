@@ -24,8 +24,6 @@ func Init() *sql.DB {
 		Log.Fatal(err)
 	}
 
-	Log.Printf("uri is %s", dburi)
-
 	db, err := connector.Connect("postgres", dburi)
 	if err != nil {
 		Log.Fatal(err)
@@ -41,7 +39,7 @@ func Init() *sql.DB {
 	return db
 }
 
-//getTemplates get template for give webhooks type e.g: slack
+//getTemplates get template for given webhooks type e.g: slack
 func (s *DBConnection) getTemplates() (map[string]string, error) {
 	var id, temptext string
 	tempmap := make(map[string]string)
