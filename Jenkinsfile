@@ -28,14 +28,14 @@ node('docker') {
         dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
         dockerPusher = "push-${env.BUILD_TAG}"
         try {
-            stage "Test"
-            try {
+            //stage "Test"
+            /** try {
               sh "docker run --rm --name ${dockerTestRunner} --entrypoint 'sh' ${dockerRepo} -c \"go test -v github.com/cyverse-de/${service.repo} | tee /dev/stderr | go-junit-report\" > test-results.xml"
             } finally {
                 junit 'test-results.xml'
 
                 sh "docker run --rm --name ${dockerTestCleanup} -v \$(pwd):/build -w /build alpine rm -r test-results.xml"
-            }
+            } **/
 
 
             milestone 100
