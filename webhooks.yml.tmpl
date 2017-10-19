@@ -7,7 +7,7 @@ amqp:
     {{ with $v := (key (printf "%s/amqp/exchange/name" $base)) }}name: {{ $v }}{{ end }}
     {{ with $v := (key (printf "%s/amqp/exchange/type" $base)) }}type: {{ $v }}{{ end }}
   {{- end }}
-  {{ with $v := (key (Printf "%s/amqp/routing" $base)) }}routing: {{ $v }}{{ end }}
+  {{ with $v := (key (printf "%s/amqp/routing" $base)) }}routing: {{ $v }}{{ end }}
 {{- end }}
 
 {{- if tree (printf "%s/de-db" $base) }}
@@ -17,4 +17,4 @@ db:
 de:
   {{ with $v := (key (printf "%s/de/base" $base)) }}base: {{ $v }}{{ end }}
 user:
-  {{ with $v := (key (printg %s/de/cas-uid-domain)) }}suffix: {{ $v }}{{ end }}
+  {{ with $v := (key (printf %s/de/cas-uid-domain)) }}suffix: {{ $v }}{{ end }}
