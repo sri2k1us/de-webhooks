@@ -120,7 +120,7 @@ func main() {
 	go func() {
 		ProcessMessages(DBConnection, msgs)
 	}()
-	Log.Print("**** Waiting for notifications. Press Ctrl + c to quit! ****")
+	Log.Print("****Waiting for notifications. Press Ctrl + c to quit!****")
 	<-forever
 }
 
