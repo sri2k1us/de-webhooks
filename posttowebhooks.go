@@ -12,21 +12,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
-//slack template
-//const templatetext = `
-//{
-//	"text": "{{.Msg}}. {{if .Completed}} <{{.Link}}|{{.LinkText}}> {{- end}}"
-//}
-//`
-
 //compltedstatus Analysis completed status
 const compltedstatus = "Completed"
 const failedstatus = "Failed"
 
 //Payload payload to post to the webhooks
 type Payload struct {
-	Msg, Link, LinkText string
-	Completed           bool
+	ID, Name, Msg, Link, LinkText, Type string
+	Completed                           bool
 }
 
 //Subscription defines user subscriptions to webhooks
@@ -124,21 +117,26 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 	var postbody Payload
 	t := template.Must(template.New("newtemplate").Parse(templatetext))
 	w := io.MultiWriter(&buf1)
-	isCompleted := isAnalysisNotification(msg) && isAnalysisCompleted(msg)
-	postbody = Payload{Msg: getMessage(msg), Link: config.GetString("de.base") + getResultFolder(msg), LinkText: "Go to results folder in DE", Completed: isCompleted}
+	isCompleted := (getType(msg) == "analysis") && isAnalysisCompleted(msg)
+	postbody = Payload{ID: getID(msg),
+		Msg:      getMessage(msg),
+		Name:     getName(msg),
+		Type:     getType(msg),
+		Link:     config.GetString("de.base") + getResultFolder(msg),
+		LinkText: "Go to results folder in DE", Completed: isCompleted}
 	t.Execute(w, postbody)
 	log.Printf("message to post: %s", buf1.String())
 	return strings.NewReader(buf1.String())
 }
 
 //check if it is an analysis notification
-func isAnalysisNotification(msg []byte) bool {
+func getType(msg []byte) string {
 	value, _, _, err := jsonparser.Get(msg, "message", "type")
 	if err != nil {
 		Log.Error(err)
-		return false
+		return ""
 	}
-	return string(value) == "analysis"
+	return string(value)
 }
 
 //check if the analysis is completed
@@ -174,5 +172,27 @@ func getMessage(msg []byte) string {
 		return ""
 	}
 	Log.Printf("Message is %s", value)
+	return string(value)
+}
+
+//get id from notification
+func getID(msg []byte) string {
+	value, _, _, err := jsonparser.Get(msg, "message", "payload", "app_id")
+	if err != nil {
+		Log.Error(err)
+		return ""
+	}
+	Log.Printf("id is %s", value)
+	return string(value)
+}
+
+//get name from notification
+func getName(msg []byte) string {
+	value, _, _, err := jsonparser.Get(msg, "message", "payload", "name")
+	if err != nil {
+		Log.Error(err)
+		return ""
+	}
+	Log.Printf("name is %s", value)
 	return string(value)
 }
