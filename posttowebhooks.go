@@ -15,6 +15,7 @@ import (
 //compltedstatus Analysis completed status
 const compltedstatus = "Completed"
 const failedstatus = "Failed"
+const dequerystring = "?type=data&folder="
 
 //Payload payload to post to the webhooks
 type Payload struct {
@@ -122,7 +123,7 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 		Msg:      getMessage(msg),
 		Name:     getName(msg),
 		Type:     getType(msg),
-		Link:     config.GetString("de.base") + getResultFolder(msg),
+		Link:     config.GetString("de.base") + dequerystring + getResultFolder(msg),
 		LinkText: "Go to results folder in DE", Completed: isCompleted}
 	t.Execute(w, postbody)
 	log.Printf("message to post: %s", buf1.String())
