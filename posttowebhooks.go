@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"text/template"
@@ -60,7 +59,7 @@ func getUserID(d *DBConnection, msg []byte) string {
 		Log.Error(err)
 		return ""
 	}
-	log.Printf("user is %s", string(value))
+	Log.Printf("user is %s", string(value))
 	uid, err := d.getUserInfo(string(value) + "@" + config.GetString("user.suffix"))
 	if err != nil {
 		Log.Error(err)
@@ -126,7 +125,7 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 		Link:     config.GetString("de.base") + dequerystring + getResultFolder(msg),
 		LinkText: "Go to results folder in DE", Completed: isCompleted}
 	t.Execute(w, postbody)
-	log.Printf("message to post: %s", buf1.String())
+	Log.Printf("message to post: %s", buf1.String())
 	return strings.NewReader(buf1.String())
 }
 

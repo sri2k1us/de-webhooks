@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"log"
 
 	"github.com/cyverse-de/configurate"
 	_ "github.com/lib/pq"
@@ -88,7 +87,7 @@ func main() {
 		Log.Fatal(err)
 	}
 
-	log.Printf("Binding queue %s to exchange %s with routing key %s",
+	Log.Printf("Binding queue %s to exchange %s with routing key %s",
 		q.Name, cfg.GetString("amqp.exchange.name"), config.GetString("amqp.routing"))
 	err = ch.QueueBind(
 		q.Name, // queue name
