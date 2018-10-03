@@ -23,20 +23,11 @@ node('docker') {
         writeFile(file: "${dockerRepo}.docker-image-sha", text: "${image_sha}")
         fingerprint "${dockerRepo}.docker-image-sha"
 
-
         dockerTestRunner = "test-${env.BUILD_TAG}"
-        dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
         dockerPusher = "push-${env.BUILD_TAG}"
         try {
-            //stage "Test"
-            /** try {
-              sh "docker run --rm --name ${dockerTestRunner} --entrypoint 'sh' ${dockerRepo} -c \"go test -v github.com/cyverse-de/${service.repo} | tee /dev/stderr | go-junit-report\" > test-results.xml"
-            } finally {
-                junit 'test-results.xml'
-
-                sh "docker run --rm --name ${dockerTestCleanup} -v \$(pwd):/build -w /build alpine rm -r test-results.xml"
-            } **/
-
+            stage "Test"
+            sh "docker run --rm --name ${dockerTestRunner} --entrypoint 'go' ${dockerRepo} test github.com/cyverse-de/${service.repo}"
 
             milestone 100
             stage "Docker Push"
@@ -59,9 +50,6 @@ node('docker') {
         } finally {
             sh returnStatus: true, script: "docker kill ${dockerTestRunner}"
             sh returnStatus: true, script: "docker rm ${dockerTestRunner}"
-
-            sh returnStatus: true, script: "docker kill ${dockerTestCleanup}"
-            sh returnStatus: true, script: "docker rm ${dockerTestCleanup}"
 
             sh returnStatus: true, script: "docker kill ${dockerPusher}"
             sh returnStatus: true, script: "docker rm ${dockerPusher}"
