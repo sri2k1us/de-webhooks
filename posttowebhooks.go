@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"text/template"
@@ -14,7 +15,6 @@ import (
 //compltedstatus Analysis completed status
 const compltedstatus = "Completed"
 const failedstatus = "Failed"
-const dequerystring = "?type=data&folder="
 
 //Payload payload to post to the webhooks
 type Payload struct {
@@ -59,7 +59,7 @@ func getUserID(d *DBConnection, msg []byte) string {
 		Log.Error(err)
 		return ""
 	}
-	Log.Printf("user is %s", string(value))
+	log.Printf("user is %s", string(value))
 	uid, err := d.getUserInfo(string(value) + "@" + config.GetString("user.suffix"))
 	if err != nil {
 		Log.Error(err)
@@ -115,6 +115,10 @@ func isNotificationInTopic(msg []byte, topics []string) bool {
 func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader {
 	var buf1 bytes.Buffer
 	var postbody Payload
+	if len(templatetext) == 0 {
+		log.Printf("Empty Template. message to post: %s", string(msg))
+		return strings.NewReader(string(msg))
+	}
 	t := template.Must(template.New("newtemplate").Parse(templatetext))
 	w := io.MultiWriter(&buf1)
 	isCompleted := (getType(msg) == "analysis") && isAnalysisCompleted(msg)
@@ -122,10 +126,10 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 		Msg:      getMessage(msg),
 		Name:     getName(msg),
 		Type:     getType(msg),
-		Link:     config.GetString("de.base") + dequerystring + getResultFolder(msg),
+		Link:     config.GetString("de.base") + getResultFolder(msg),
 		LinkText: "Go to results folder in DE", Completed: isCompleted}
 	t.Execute(w, postbody)
-	Log.Printf("message to post: %s", buf1.String())
+	log.Printf("message to post: %s", buf1.String())
 	return strings.NewReader(buf1.String())
 }
 
