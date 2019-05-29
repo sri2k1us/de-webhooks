@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"text/template"
@@ -117,7 +116,7 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 	var buf1 bytes.Buffer
 	var postbody Payload
 	if len(templatetext) == 0 {
-		log.Printf("Empty Template. message to post: %s", string(msg))
+		Log.Printf("Empty Template. message to post: %s", string(msg))
 		return strings.NewReader(string(msg))
 	}
 	t := template.Must(template.New("newtemplate").Parse(templatetext))
