@@ -116,8 +116,9 @@ func preparePayloadFromTemplate(templatetext string, msg []byte) *strings.Reader
 	var buf1 bytes.Buffer
 	var postbody Payload
 	if len(templatetext) == 0 {
-		Log.Printf("Empty Template. message to post: %s", string(msg))
-		return strings.NewReader(string(msg))
+		payload := string(msg)
+		Log.Printf("Empty Template. message to post: %s", payload)
+		return strings.NewReader(payload)
 	}
 	t := template.Must(template.New("newtemplate").Parse(templatetext))
 	w := io.MultiWriter(&buf1)
